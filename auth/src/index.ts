@@ -1,26 +1,38 @@
 import express from "express";
-import 'express-async-errors'
+import "express-async-errors";
 import { currentUserRouter } from "./routes/current-user";
 import { signupRouter } from "./routes/signup";
 import { signoutRouter } from "./routes/signout";
 import { signinRouter } from "./routes/signin";
 import { errorHandler } from "./middlewares/error-handler";
 import { NotFoundError } from "./errors/not-found-error";
+import mongoose from "mongoose";
 
-const app = express()
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+app.use(currentUserRouter);
+app.use(signinRouter);
+app.use(signoutRouter);
+app.use(signupRouter);
 
-app.use(currentUserRouter)
-app.use(signinRouter)
-app.use(signoutRouter)
-app.use(signupRouter)
+app.all("*", () => {
+  throw new NotFoundError();
+});
+app.use(errorHandler);
 
-app.all('*',()=>{throw new NotFoundError() })
-app.use(errorHandler)
+const start = async () => {
+  try {
+    await mongoose.connect("mongodb://auth-mongo-srv:27017/auth");
+    console.log('Connected To MongoDb');
+  } catch (err) {
+    console.log(err);
+  }
+  const port = 3000;
+  app.listen(port, () => {
+    console.log(`App started on port ${port}`);
+  });
+};
 
-const port = 3000;
-app.listen(port, () => {
-    console.log(`App started on port ${port}`)
-})
+start()
