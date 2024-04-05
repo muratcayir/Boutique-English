@@ -21,7 +21,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
+  
 });
+
+userSchema.set('toJSON',{
+  transform: (doc: any, { _id,password,__v, ...ret }: any) => {
+    ret.id = _id;
+    return ret;
+  }
+})
 
 userSchema.pre('save',async function (done) {
   if(this.isModified('password')){
