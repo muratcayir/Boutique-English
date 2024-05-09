@@ -11,19 +11,21 @@ const AppComponent = ({ Component, pageProps, currentUser }) => {
   );
 };
 
-AppComponent.getInitialProps = async appContext => {
-  const client = buildClient(appContext.ctx);
+export async function getServerSideProps(context) {
+  const client = buildClient(context);
   const { data } = await client.get('/api/users/currentuser');
 
   let pageProps = {};
-  if (appContext.Component.getInitialProps) {
-    pageProps = await appContext.Component.getInitialProps(appContext.ctx);
+  if (context.Component.getInitialProps) {
+    pageProps = await context.Component.getInitialProps(context);
   }
 
   return {
-    pageProps,
-    ...data
+    props: {
+      ...pageProps,
+      currentUser: data.currentUser || null,
+    },
   };
-};
+}
 
 export default AppComponent;

@@ -8,21 +8,32 @@ import { errorHandler } from "./middlewares/error-handler";
 import { NotFoundError } from "./errors/not-found-error";
 import cookieSession from "cookie-session";
 
-
 const app = express();
-app.set('trust proxy',true) 
-app.use(express.json());
-app.use(cookieSession({signed: false, secure:process.env.NODE_ENV !== 'test'}))
+
+// Trust first proxy
+app.set('trust proxy', 1);
+
+// Parse URL-encoded bodies before cookie-parser middleware
 app.use(express.urlencoded({ extended: true }));
 
+// Use cookie-session middleware
+app.use(cookieSession({ signed: false, secure: process.env.NODE_ENV === 'production' }));
+
+// Use JSON parser middleware
+app.use(express.json());
+
+// Use routers
 app.use(currentUserRouter);
 app.use(signinRouter);
 app.use(signoutRouter);
 app.use(signupRouter);
 
+// Handle 404 errors
 app.all("*", () => {
   throw new NotFoundError();
 });
+
+// Error handling middleware
 app.use(errorHandler);
 
-export {app}
+export { app };
